@@ -1,1 +1,309 @@
 name: ZenPacks.zenoss.ZenPackLibDemo
+zProperties:
+  DEFAULTS:
+    category: ZPLDemo
+  zZPLDemoPassword:
+    type: password
+    default: ''
+  zZPLDemoBoolean:
+    default: True
+    type: boolean
+  zZPLDemoInt:
+    default: 1
+    type: int
+  zZPLDemoString:
+    default: Text
+  zZPLDemoSelection:
+    type: selection
+    default: [a, b, c]
+  zZPLDemoDate:
+    type: date
+  zZPLDemoFloat:
+    type: float
+    default: 0.1
+  zZPLDemoLong:
+    type: long
+    default: 100000000000000000000000
+
+class_relationships:
+  # normal containing relationship
+- BasicDevice 1:MC BasicComponent
+- BasicDevice 1:MC SubComponent
+- BasicDevice 1:MC AuxComponent
+- SubComponent M:M AuxComponent
+
+classes:
+  BasicDevice:
+    base: [zenpacklib.Device]
+  BasicComponent:
+    base: [zenpacklib.Component]
+    order: 1
+    properties:
+      DEFAULTS:
+        grid_display: true
+      basic_string:
+        label: Basic String
+        order: 3
+      basic_int:
+        label: Basic Integer
+        type: int
+        order: 4
+      basic_boolean:
+        label: Basic Boolean
+        type: boolean
+        order: 5
+      get_status:
+        label: Current Status
+        label_width: 110
+        grid_display: true
+        order: 1
+        datapoint: status_status
+        enum:
+          0: OK
+          1: Warning
+          2: Critical
+      status_severity:
+        grid_display: false
+        details_display: false
+        enum:
+          0: OK
+          1: Warning
+          2: Critical
+      getInheritedText:
+        label: Inherited Text
+        label_width: 110
+        order: 2
+        api_only: true
+        api_backendtype: method
+        grid_display: true
+  SubComponent:
+    label: Sub Component
+    base: [BasicComponent]
+    order: 2
+    relationships:
+        auxComponents: {}
+        basicDevice: {}
+    dynamicview_relations:
+      impacts: [basicDevice]
+      impacted_by: [auxComponents]
+  AuxComponent:
+    label: Aux Component
+    order: 3
+    base: [SubComponent]
+    properties:
+      editable_int:
+        type: int
+        editable: true
+        order: 6
+        grid_display: false
+      editable_bool:
+        type: boolean
+        editable: true
+        order: 7
+        grid_display: false
+      editable_float:
+        type: float
+        editable: true
+        order: 8
+        grid_display: false
+      editable_string:
+        type: string
+        editable: true
+        order: 9
+        grid_display: false
+      editable_lines:
+        type: lines
+        editable: true
+        order: 10
+        grid_display: false
+    dynamicview_relations:
+      impacts: [subComponent]
+
+device_classes:
+  /Server/ZenPackLibDemo:
+    remove: true
+    description: ZPL Demo Device
+    protocol: ZPLDemo
+    zProperties:
+      zDeviceTemplates: 
+        - BasicDevice
+      zPythonClass: ZenPacks.zenoss.ZenPackLibDemo.BasicDevice
+      zSnmpMonitorIgnore: True
+      zCollectorPlugins:
+        - zpldemo.ZPLDemoMap
+    templates:
+      BasicDevice:
+        datasources:
+          A:
+            type: SNMP
+            datapoints:
+              A:
+                rrdtype: GAUGE
+                rrdmin: 0
+                rrdmax: 100
+                isrow: true
+                description: a datapoint
+                aliases: test_alias
+      SubComponent:
+        description: Monitoring template for SubComponent
+        thresholds:
+          Threshold:
+            dsnames: [test_pct_test_pct]
+            eventClass: /Status/ZenPackLibDemo
+            severity: 3
+            enabled: true
+            minval: 0
+            maxval: 80
+            escalateCount: 2
+            description: A typical threshold
+            explanation: Why
+            resolution: What to do
+        datasources:
+          status:
+            type: Python
+            plugin_classname: ZenPacks.zenoss.ZenPackLibDemo.dsplugins.ZPLDemoStatusDataSourcePlugin
+            datapoints:
+              status: GAUGE
+          test_pct:
+            type: Python
+            plugin_classname: ZenPacks.zenoss.ZenPackLibDemo.dsplugins.ZPLDemoDataSourcePlugin
+            datapoints:
+              test_pct: GAUGE
+          test_rate:
+            type: Python
+            plugin_classname: ZenPacks.zenoss.ZenPackLibDemo.dsplugins.ZPLDemoDataSourcePlugin
+            datapoints:
+              test_rate: DERIVE_MIN_0
+        graphs:
+          Percent:
+            units: percent
+            miny: 0
+            maxy: 100
+            graphpoints:
+              pct:
+                dpName: test_pct_test_pct
+                legend: Percent
+          Rate:
+            units: percent/sec
+            graphpoints:
+              pct:
+                dpName: test_rate_test_rate
+                legend: Rate
+      AuxComponent:
+        description: Monitoring template for AuxComponent
+        thresholds:
+          Threshold:
+            dsnames: [test_pct_test_pct]
+            eventClass: /Status/ZenPackLibDemo
+            severity: 3
+            enabled: true
+            minval: 0
+            maxval: 50
+            escalateCount: 2
+            description: A typical threshold
+            explanation: Why
+            resolution: What to do
+        datasources:
+          status:
+            type: Python
+            plugin_classname: ZenPacks.zenoss.ZenPackLibDemo.dsplugins.ZPLDemoStatusDataSourcePlugin
+            datapoints:
+              status: GAUGE
+          test_pct:
+            type: Python
+            plugin_classname: ZenPacks.zenoss.ZenPackLibDemo.dsplugins.ZPLDemoDataSourcePlugin
+            datapoints:
+              test_pct: GAUGE
+          test_rate:
+            type: Python
+            plugin_classname: ZenPacks.zenoss.ZenPackLibDemo.dsplugins.ZPLDemoDataSourcePlugin
+            datapoints:
+              test_rate: DERIVE_MIN_0
+        graphs:
+          Percent:
+            units: percent
+            graphpoints:
+              pct:
+                dpName: test_pct_test_pct
+                legend: Percent
+          Rate:
+            units: percent/sec
+            graphpoints:
+              pct:
+                dpName: test_rate_test_rate
+                legend: Rate
+
+event_classes:
+  /Status/ZenPackLibDemo:
+    remove: true
+    transform: |-
+      def getMetricValue(text):
+          '''pull the current metric value out of the event summary or message'''
+          searchString = 'current value '
+          start = text.find(searchString)+len(searchString)
+          return text[start:]
+
+      try:
+          status_val = int(float(getMetricValue(evt.summary)))
+          evt.summary = 'Current value is {}'.format(status_val)
+      except:
+          pass
+  /Status/ZenPackLibDemo/SubClass:
+    description: a subclass
+    transform: |-
+      try:
+          status_val = int(float(getMetricValue(evt.summary)))
+          evt.summary = 'Current value is {}'.format(status_val)
+      except:
+          pass
+  /Status/ZenPackLibDemo/SubClass2:
+    description: a second subclass
+    transform: |-
+      try:
+          status_val = int(float(getMetricValue(evt.summary)))
+          evt.summary = 'Current value is {}'.format(status_val)
+      except:
+          pass
+
+process_class_organizers:
+  /ZenPackLibDemo:
+    description: Description of the Process Class Organizer
+    process_classes:
+      foo:
+        description: Description of the foo Process Class
+        includeRegex: sbin\/foo
+        replaceRegex: ".*"
+        replacement: Foo Process Class
+        excludeRegex: \\b(vim|tail|grep|tar|cat|bash)\\b
+      bar:
+        description: Description of the bar Process Class
+        includeRegex: sbin\/bar
+        excludeRegex: "\\b(vim|tail|grep|tar|cat|bash)\\b"
+        replaceRegex: .*
+        replacement: Bar Process Class
+        monitor: true
+        alert_on_restart: false
+        fail_severity: 3
+        modeler_lock: 0
+        send_event_when_blocked: true
+  /ZenPackLibDemo/SubClass:
+    description: Description of the Process Class Organizer
+    process_classes:
+      foo:
+        description: Description of the foo Process Class
+        includeRegex: sbin\/foo
+        replaceRegex: ".*"
+        replacement: Foo Process Class
+        excludeRegex: \\b(vim|tail|grep|tar|cat|bash)\\b
+      bar:
+        description: Description of the bar Process Class
+        includeRegex: sbin\/bar
+        excludeRegex: "\\b(vim|tail|grep|tar|cat|bash)\\b"
+        replaceRegex: .*
+        replacement: Bar Process Class
+        monitor: true
+        alert_on_restart: false
+        fail_severity: 3
+        modeler_lock: 0
+        send_event_when_blocked: true
+        
