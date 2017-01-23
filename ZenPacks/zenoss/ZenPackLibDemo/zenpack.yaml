@@ -13,17 +13,18 @@ zProperties:
     type: int
   zZPLDemoString:
     default: Text
-  zZPLDemoSelection:
-    type: selection
-    default: [a, b, c]
-  zZPLDemoDate:
-    type: date
   zZPLDemoFloat:
     type: float
     default: 0.1
-  zZPLDemoLong:
-    type: long
-    default: 100000000000000000000000
+# These types are documented but don't work yet
+#  zZPLDemoSelection:
+#    type: selection
+#    default: [a, b, c]
+#  zZPLDemoDate:
+#    type: date
+#  zZPLDemoLong:
+#    type: long
+#    default: 100000000000000000000000
 
 class_relationships:
   # normal containing relationship
