@@ -13,11 +13,6 @@ zProperties:
     type: int
   zZPLDemoString:
     default: Text
-  zZPLDemoSelection:
-    type: selection
-    default: [a, b, c]
-  zZPLDemoDate:
-    type: date
   zZPLDemoFloat:
     type: float
     default: 0.1
