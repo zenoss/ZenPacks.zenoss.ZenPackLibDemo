@@ -27,6 +27,17 @@ class ZPLDemoMap(PythonPlugin):
                                     'editable_float': 0.9,
                                     'set_subComponents': ['subComponent-1']
                                     })]),
+            RelationshipMap(
+                modname="ZenPacks.zenoss.ZenPackLibDemo.TertiaryComponent",
+                relname="tertiaryComponents",
+                # compname='os',
+                objmaps=[ObjectMap({'id': 'tertComponent-1',
+                                    'basic_string': 'Aux Text',
+                                    'basic_int': 2,
+                                    'basic_boolean': False,
+                                    'editable_float': 0.9,
+                                    'set_auxComponents': ['auxComponent-1']
+                                    })]),
         ]
 
     def process(self, device, results, log):

@@ -8,7 +8,7 @@ AUTHOR = "Your Name Here"
 LICENSE = ""
 NAMESPACE_PACKAGES = ['ZenPacks', 'ZenPacks.zenoss']
 PACKAGES = ['ZenPacks', 'ZenPacks.zenoss', 'ZenPacks.zenoss.ZenPackLibDemo']
-INSTALL_REQUIRES = ['ZenPacks.zenoss.ZenPackLib']
+INSTALL_REQUIRES = ['ZenPacks.zenoss.ZenPackLib>2.0.1']
 COMPAT_ZENOSS_VERS = ""
 PREV_ZENPACK_NAME = ""
 # STOP_REPLACEMENTS

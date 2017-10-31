@@ -5,6 +5,8 @@ zProperties:
   zZPLDemoPassword:
     type: password
     default: ''
+    #label: ZPL Demo Password
+    #description: Demonstration of a password property
   zZPLDemoBoolean:
     default: True
     type: boolean
@@ -13,24 +15,29 @@ zProperties:
     type: int
   zZPLDemoString:
     default: Text
-  zZPLDemoSelection:
-    type: selection
-    default: [a, b, c]
-  zZPLDemoDate:
-    type: date
+#  zZPLDemoSelection:
+#    type: selection
+#    default: [a, b, c]
+#  zZPLDemoDate:
+#    type: date
   zZPLDemoFloat:
     type: float
     default: 0.1
   zZPLDemoLong:
     type: long
     default: 100000000000000000000000
+  zZPLDemoLines:
+    type: lines
+    #default: ['this','that']
 
 class_relationships:
   # normal containing relationship
 - BasicDevice 1:MC BasicComponent
 - BasicDevice 1:MC SubComponent
 - BasicDevice 1:MC AuxComponent
+- BasicDevice 1:MC TertiaryComponent
 - SubComponent M:M AuxComponent
+- TertiaryComponent M:M AuxComponent
 
 classes:
   BasicDevice:
@@ -44,6 +51,7 @@ classes:
       basic_string:
         label: Basic String
         order: 3
+        default: Some Text
       basic_int:
         label: Basic Integer
         type: int
@@ -59,9 +67,8 @@ classes:
         order: 1
         datapoint: status_status
         enum:
-          0: OK
-          1: Warning
-          2: Critical
+          0: Down
+          1: Up
       status_severity:
         grid_display: false
         details_display: false
@@ -118,6 +125,11 @@ classes:
         grid_display: false
     dynamicview_relations:
       impacts: [subComponent]
+  TertiaryComponent:
+    label: Tertiary Component
+    order: 3
+    base: [zenpacklib.WinService]
+
 
 device_classes:
   /Server/ZenPackLibDemo:
@@ -183,12 +195,21 @@ device_classes:
               pct:
                 dpName: test_pct_test_pct
                 legend: Percent
+                colorindex: 1
           Rate:
             units: percent/sec
             graphpoints:
               pct:
                 dpName: test_rate_test_rate
                 legend: Rate
+                color: FF00FF
+                lineType: AREA
+                stacked: false
+          #Test:
+            #graphpoints:
+            #  comment:
+            #    instruct_type: COMMENT
+            #    text: Just Testing
       AuxComponent:
         description: Monitoring template for AuxComponent
         thresholds:
@@ -248,6 +269,15 @@ event_classes:
           evt.summary = 'Current value is {}'.format(status_val)
       except:
           pass
+    mappings:
+      stateChange:
+        transform:  |-
+          try:
+              status_val = int(float(getMetricValue(evt.summary)))
+              evt.summary = 'Current value is {}'.format(status_val)
+          except:
+              pass
+        example: snmp trap stateChange
   /Status/ZenPackLibDemo/SubClass:
     description: a subclass
     transform: |-
